@@ -25,3 +25,9 @@ deps/lua/src/liblua.a
 .make-*
 .prerequisites
 *.dSYM
+
+\.vs/
+
+\.idea/
+
+CppProperties\.json

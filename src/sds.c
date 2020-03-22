@@ -70,7 +70,7 @@ sds sdsnewlen(const void *init, size_t initlen) {
     // 根据是否有初始化内容，选择适当的内存分配方式
     // T = O(N)
     if (init) {
-        // zmalloc 不初始化所分配的内存
+        // zmalloc 不初始化所分配的内存 多加一个字节用于存放'\0'
         sh = zmalloc(sizeof(struct sdshdr)+initlen+1);
     } else {
         // zcalloc 将分配的内存全部初始化为 0
@@ -174,6 +174,7 @@ void sdsfree(sds s) {
  * the output will be "6" as the string was modified but the logical length
  * remains 6 bytes. */
 void sdsupdatelen(sds s) {
+	// sdsnewlen函数只返回了sdshdr这个结构体的buf部分，因为是内存连续分配所以s-(sizeof(struct sdshdr))可以获取到对应的sdshdr的首地址
     struct sdshdr *sh = (void*) (s-(sizeof(struct sdshdr)));
     int reallen = strlen(s);
     sh->free += (sh->len-reallen);
@@ -355,7 +356,7 @@ void sdsIncrLen(sds s, int incr) {
     // 确保 sds 空间足够
     assert(sh->free >= incr);
 
-    // 更新属性
+    // 更新属】 cx
     sh->len += incr;
     sh->free -= incr;
 
@@ -431,6 +432,7 @@ sds sdscatlen(sds s, const void *t, size_t len) {
     // 原有字符串长度
     size_t curlen = sdslen(s);
 
+	// 这里是否可以判断下当前的free是否大于len？sdsMakeRoomFor函数里面做了判断
     // 扩展 sds 空间
     // T = O(N)
     s = sdsMakeRoomFor(s,len);
@@ -988,6 +990,8 @@ int sdscmp(const sds s1, const sds s2) {
     minlen = (l1 < l2) ? l1 : l2;
     cmp = memcmp(s1,s2,minlen);
 
+	// cmp == 0 的时候表示短字符串是长字符串的子集？
+	// 返回的是长度差？
     if (cmp == 0) return l1-l2;
 
     return cmp;
@@ -1333,7 +1337,7 @@ err:
  *
  * 将字符串 s 中，
  * 所有在 from 中出现的字符，替换成 to 中的字符
- *
+ * 这里只适用于from和to的size一样大，不然会出问题
  * For instance: sdsmapchars(mystring, "ho", "01", 2)
  * will have the effect of turning the string "hello" into "0ell1".
  *
@@ -1376,7 +1380,7 @@ sds sdsjoin(char **argv, int argc, char *sep) {
     }
     return join;
 }
-
+#define SDS_TEST_MAIN 
 #ifdef SDS_TEST_MAIN
 #include <stdio.h>
 #include "testhelp.h"

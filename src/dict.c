@@ -607,6 +607,7 @@ int dictReplace(dict *d, void *key, void *val)
     dictSetVal(d, entry, val);
     // 然后释放旧值
     // T = O(1)
+	// 这里需要释放auxentry.v 
     dictFreeVal(d, &auxentry);
 
     return 0;

@@ -2020,6 +2020,7 @@ int listenToPort(int port, int *fds, int *count) {
                 port, server.neterr);
             return REDIS_ERR;
         }
+		// 设置文件描述符为非阻塞态
         anetNonBlock(NULL,fds[*count]);
         (*count)++;
     }
